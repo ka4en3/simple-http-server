@@ -31,13 +31,6 @@ class HTTPServer:
         server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
-        # Try to use SO_REUSEPORT if available (Linux)
-        if hasattr(socket, 'SO_REUSEPORT'):
-            try:
-                server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
-            except OSError:
-                logger.warning("SO_REUSEPORT not supported on this platform")
-
         server_socket.bind((self.host, self.port))
         server_socket.setblocking(False)
 
@@ -63,6 +56,7 @@ class HTTPServer:
         for task in self.clients:
             task.cancel()
 
+        # Wait for all client tasks to finish
         if self.clients:
             await asyncio.gather(*self.clients, return_exceptions=True)
 
@@ -136,7 +130,6 @@ class HTTPServer:
         # Decode and normalize path
         try:
             path = url_decode(request.path)
-            logging.debug(f"Decoded path: {path}")
         except ValueError:
             return HTTPResponse(400, "Bad Request")
 
