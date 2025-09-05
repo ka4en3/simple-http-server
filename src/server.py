@@ -4,7 +4,7 @@ Asynchronous HTTP Server implementation
 
 import asyncio
 import logging
-import os
+from urllib.parse import unquote
 import socket
 from pathlib import Path
 
@@ -129,7 +129,7 @@ class HTTPServer:
 
         # Decode and normalize path
         try:
-            path = url_decode(request.path)
+            path = unquote(request.path)
         except ValueError:
             return HTTPResponse(400, "Bad Request")
 
@@ -137,36 +137,36 @@ class HTTPServer:
         if '?' in path:
             path = path.split('?')[0]
 
-        # Prevent directory traversal
-        if '../' in path:
-            return HTTPResponse(403, "Forbidden")
-
-        # Remove leading slash
-        if path.startswith('/'):
-            path = path[1:]
-
-        # check for trailing slash
-        ends_with_slash = path.endswith("/")
-
-        # Construct full file path
-        file_path = self.document_root / path
-
-        # when path ends with slash, it should be a directory
-        if ends_with_slash:
-            if not file_path.is_dir():
-                return HTTPResponse(404, "Not Found")
-
         try:
-            # Resolve to handle symlinks securely
-            file_path = file_path.resolve()
+            # Normalize path (removes redundant separators, handles ../ and ..\\)
+            try:
+                # Construct full file path relative to document root
+                file_path = (self.document_root / path.lstrip('/')).resolve()
+            except (ValueError, FileNotFoundError, PermissionError):
+                return HTTPResponse(400, "Bad Request")
 
-            # Ensure file is within document root
-            if not str(file_path).startswith(str(self.document_root)):
-                return HTTPResponse(403, "Forbidden")
+            # Ensure path is within document root
+            try:
+                document_root = self.document_root.resolve()
+                if document_root not in file_path.parents and file_path != document_root:
+                    return HTTPResponse(403, "Forbidden")
+            except FileNotFoundError:
+                return HTTPResponse(500, "Server Error")
 
             # Check if path exists
             if not file_path.exists():
                 return HTTPResponse(404, "Not Found")
+
+            # Handle directory vs. file based on trailing slash
+            ends_with_slash = path.endswith('/')
+            if ends_with_slash and not file_path.is_dir():
+                return HTTPResponse(404, "Not Found")
+            if not ends_with_slash and file_path.is_dir():
+                return HTTPResponse(403, "Forbidden")  # Or redirect to add trailing slash
+
+            # Optional: Restrict access to hidden or sensitive files
+            if any(part.startswith('.') for part in file_path.parts):
+                return HTTPResponse(403, "Forbidden")
 
             # Handle directory requests
             if file_path.is_dir():
