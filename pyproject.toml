@@ -3,7 +3,7 @@ name = "simple-http-server"
 version = "0.1.0"
 description = "Simple HTTP server implementation"
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.9"
 dependencies = [
     "pip>=25.2",
 ]
@@ -13,5 +13,4 @@ dev-dependencies = [
     "pytest>=7.0.0",
     "pytest-asyncio>=0.21.0",
     "aiofiles>=23.0.0",
-    "ruff>=0.1.0",
 ]
