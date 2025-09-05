@@ -38,22 +38,22 @@ class HTTPResponse:
         # Build status line
         status_line = f"HTTP/1.1 {self.status_code} {self.status_message}"
 
-        # Build headers
-        header_lines = [status_line]
-        for name, value in self.headers.items():
-            header_lines.append(f"{name}: {value}")
-
         # Add content length if body exists
         if self.body:
             if 'Content-Length' not in self.headers:
                 self.add_header('Content-Length', str(len(self.body)))
         else:
-            # For error responses without body
+            # For error responses without a pre-set body, generate a simple HTML error page and appropriate Content-Type and Content-Length.
             if self.status_code >= 400 and 'Content-Length' not in self.headers:
                 error_body = f"<html><body><h1>{self.status_code} {self.status_message}</h1></body></html>"
                 self.body = error_body.encode('utf-8')
                 self.add_header('Content-Length', str(len(self.body)))
                 self.add_header('Content-Type', 'text/html')
+
+        # Build headers
+        header_lines = [status_line]
+        for name, value in self.headers.items():
+            header_lines.append(f"{name}: {value}")
 
         # Join headers
         headers = '\r\n'.join(header_lines) + '\r\n\r\n'
