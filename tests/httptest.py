@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+# !!! These tests are expected to work with 'LF' or 'CR' line separator in content of the files !!!
+
 import sys
 
 v3 = sys.version_info[0] == 3
