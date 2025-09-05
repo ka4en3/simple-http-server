@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 class HTTPServer:
     """Asynchronous HTTP Server"""
 
-    def __init__(self, host='0.0.0.0', port=80, document_root='./static'):
+    def __init__(self, host='0.0.0.0', port=8080, document_root='./static'):
         self.host = host
         self.port = port
         self.document_root = Path(document_root).resolve()

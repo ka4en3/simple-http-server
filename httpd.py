@@ -40,8 +40,8 @@ def parse_arguments():
     parser.add_argument(
         '-p', '--port',
         type=int,
-        default=80,
-        help='Port to listen on (default: 80)'
+        default=8080,
+        help='Port to listen on (default: 8080)'
     )
     parser.add_argument(
         '-d', '--debug',
