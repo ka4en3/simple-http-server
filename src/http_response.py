@@ -25,7 +25,7 @@ class HTTPResponse:
         self.body: Optional[bytes] = None
 
         # Set default headers
-        self.add_header('Server', 'OTUS-HTTPServer/0.1')
+        self.add_header('Server', 'SIMPLE-HTTPServer/0.1')
         self.add_header('Date', self._format_date())
         self.add_header('Connection', 'keep-alive')
 
